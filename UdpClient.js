@@ -30,4 +30,8 @@ client.on('message', function(message, remote) {
 	});
 });
 
-client.bind(ListenPort, ServerIp);
+client.bind({
+  address: ServerIp,
+  port: ListenPort,
+  exclusive: true
+});
