@@ -12,16 +12,12 @@ parser.addArgument(
   [ "-p", "--port" ],
   {
     help: "port to listen on",
-    defaultValue: 54321
+    defaultValue: 12345
   }
 );
 const args = parser.parseArgs();
 
 const udpReceiver = new UdpHandler("172.24.71.214", args.port, null, false);
-
-const datestr = new Date().toISOString().replace(/:/, '-').replace(/:/, '-');
-var filename = datestr + ".csv";
-var stream = fs.createWriteStream(filename, {flags:'a'});
 
 function AndroidIMUReceiver(){
 	const latest = UdpHandler.udpMsgQueue.pop();
@@ -56,12 +52,28 @@ var msgCount = 0;
 function AndroidIMUStringReceiver(){
 	if(msgCount != UdpHandler.udpMsgQueue.length){
 		msgCount = UdpHandler.udpMsgQueue.length;
+		if(msgCount > 0){
+			var item = UdpHandler.udpMsgQueue[msgCount-1];
+			var str = new Buffer(item).toString('ascii');
+			var obj = JSON.parse(str);
+			console.log("receive:" + util.inspect(obj, {showHidden: false, depth: null}));
+		}		
 	}else if(msgCount>0){
+		const datestr = new Date().toISOString().replace(/:/, '-').replace(/:/, '-');
+		var filename = datestr + ".csv";
+		var stream = fs.createWriteStream(filename, {flags:'a'});
 		UdpHandler.udpMsgQueue.forEach( function (item,index) {
 			var str = new Buffer(item).toString('ascii');
 			var obj = JSON.parse(str);
 			//console.log("receive:" + util.inspect(obj, {showHidden: false, depth: null}));
-			var newstr = obj["timestamp"]+","+obj["acc"][0] + ","+obj["acc"][1] + ","+obj["acc"][2] + ","+obj["gyro"][0] + ","+obj["gyro"][1] + ","+obj["gyro"][2] + "\n";
+			var newstr = obj["timestamp"]+","+obj["acc"][0] + ","+obj["acc"][1] + ","+obj["acc"][2] + ","
+			+obj["gyro"][0] + ","+obj["gyro"][1] + ","+obj["gyro"][2] + ","
+			+obj["pos"][0] + ","+obj["pos"][1] + ","+obj["pos"][2] + ","
+			+obj["rotation"][0] + ","+obj["rotation"][1] + ","+obj["rotation"][2] + ","
+			+obj["rotation"][3] + ","+obj["rotation"][4] + ","+obj["rotation"][5] + ","
+			+obj["rotation"][6] + ","+obj["rotation"][7] + ","+obj["rotation"][8]
+			 + "\n";
+			console.log(newstr);
 			stream.write(newstr);
 		});
 		udpReceiver.clearQueue();
@@ -72,4 +84,4 @@ function AndroidIMUStringReceiver(){
 
 setInterval(() => {
 	AndroidIMUStringReceiver();
-}, 1000);
+}, 100);
