@@ -22,7 +22,8 @@ class UdpHandler{
 		});
 
 		client.on('message', function(message, remote) {
-			//console.log("receive:" + util.inspect(message.toString(), {showHidden: false, depth: null}) + " from " + remote.address);
+			// console.log("receive:" + util.inspect(message.toString(), {showHidden: false, depth: null}) + " from " + remote.address);
+			console.log("receive:" + message);
 			
 			if(react){
 				const msg = JSON.stringify({ name: "rokoko", arrival_time: Date.now() });

@@ -15,9 +15,16 @@ parser.addArgument(
     defaultValue: 12345
   }
 );
+parser.addArgument(
+	[ "--host" ],
+	{
+	  help: "host to connect to",
+	  defaultValue: "172.24.71.214"
+	}
+  );
 const args = parser.parseArgs();
 
-const udpReceiver = new UdpHandler("172.24.71.214", args.port, null, false);
+const udpReceiver = new UdpHandler(args.host, args.port, null, false);
 
 function AndroidIMUReceiver(){
 	const latest = UdpHandler.udpMsgQueue.pop();
@@ -56,7 +63,7 @@ function AndroidIMUStringReceiver(){
 			var item = UdpHandler.udpMsgQueue[msgCount-1];
 			var str = new Buffer(item).toString('ascii');
 			var obj = JSON.parse(str);
-			console.log("receive:" + util.inspect(obj, {showHidden: false, depth: null}));
+			// console.log("receive:" + util.inspect(obj, {showHidden: false, depth: null}));
 		}		
 	}else if(msgCount>0){
 		const datestr = new Date().toISOString().replace(/:/, '-').replace(/:/, '-');
@@ -68,12 +75,12 @@ function AndroidIMUStringReceiver(){
 			//console.log("receive:" + util.inspect(obj, {showHidden: false, depth: null}));
 			var newstr = obj["timestamp"]+","+obj["acc"][0] + ","+obj["acc"][1] + ","+obj["acc"][2] + ","
 			+obj["gyro"][0] + ","+obj["gyro"][1] + ","+obj["gyro"][2] + ","
-			+obj["pos"][0] + ","+obj["pos"][1] + ","+obj["pos"][2] + ","
-			+obj["rotation"][0] + ","+obj["rotation"][1] + ","+obj["rotation"][2] + ","
-			+obj["rotation"][3] + ","+obj["rotation"][4] + ","+obj["rotation"][5] + ","
-			+obj["rotation"][6] + ","+obj["rotation"][7] + ","+obj["rotation"][8]
+			// +obj["pos"][0] + ","+obj["pos"][1] + ","+obj["pos"][2] + ","
+			// +obj["rotation"][0] + ","+obj["rotation"][1] + ","+obj["rotation"][2] + ","
+			// +obj["rotation"][3] + ","+obj["rotation"][4] + ","+obj["rotation"][5] + ","
+			// +obj["rotation"][6] + ","+obj["rotation"][7] + ","+obj["rotation"][8]
 			 + "\n";
-			console.log(newstr);
+			// console.log(obj["acc"]);
 			stream.write(newstr);
 		});
 		udpReceiver.clearQueue();
