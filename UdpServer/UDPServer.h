@@ -12,7 +12,8 @@ public:
     UDPServer();
     ~UDPServer();
 
-    bool recv();
+    bool recvShoeInsoles();
+    bool recvIMU();
     void closeConnection();
     void setAckToClient(bool b) { ackToClient = b; }
 

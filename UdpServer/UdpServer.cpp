@@ -19,8 +19,8 @@ UDPServer::UDPServer()
     nRows = 48; nCols = 80;
     // debug
     nCols = 5; nRows = 4;
-    int len = sizeof(long long) + sizeof(int) + sizeof(int) + sizeof(int)*nCols*nRows;
-    buffer = new char[len];
+    //int len = sizeof(long long) + sizeof(int) + sizeof(int) + sizeof(int)*nCols*nRows;
+    //buffer = new char[len];
     forces = new int[nRows*nCols];
 }
 
@@ -29,12 +29,14 @@ UDPServer::~UDPServer()
 {
 }
 
-bool UDPServer::recv()
+bool UDPServer::recvShoeInsoles()
 {
     // the pressure data is 80*48 right now and will be 32*12 later I guess
     // the code is not necessarily to be smart so I predefine the size
-    ZeroMemory(buffer, sizeof(buffer));
     int len = sizeof(long long) + sizeof(int) + sizeof(int) + sizeof(int)*nCols*nRows;
+    buffer = new char[len];
+    ZeroMemory(buffer, sizeof(buffer));
+    
     printf("Waiting...\n");
     if (recvfrom(socketS, buffer, len, 0, (sockaddr*)&from, &fromlen) != SOCKET_ERROR)
     {
@@ -49,6 +51,36 @@ bool UDPServer::recv()
         std::cout << "Received message from " << addr_char << " ts:" << ts << " " << tempCols << " " << tempRows << "\n";
         // optionally
         if(ackToClient)
+            sendto(socketS, buffer, sizeof(buffer), 0, (sockaddr*)&from, fromlen);
+    }
+    return true;
+}
+
+bool UDPServer::recvIMU()
+{
+    // the code is for IMU data format
+    int len = sizeof(double) + sizeof(double) * 3;
+    buffer = new char[len];
+    ZeroMemory(buffer, sizeof(buffer));
+    
+    printf("Waiting...\n");
+    int n = recvfrom(socketS, buffer, len, 0, (sockaddr*)&from, &fromlen);
+    char addr_buffer[16];
+    const char* addr_char = inet_ntop(AF_INET, &from.sin_addr, addr_buffer, sizeof(addr_buffer));
+    if (n != SOCKET_ERROR)
+    {
+        char addr_buffer[16];
+        const char* addr_char = inet_ntop(AF_INET, &from.sin_addr, addr_buffer, sizeof(addr_buffer));
+        // parse it
+        double ts; float acc[3], gyro[3];
+        memcpy_s(&ts, sizeof(double), buffer, sizeof(double));
+        memcpy_s(&acc, sizeof(float)*3, buffer + sizeof(double), sizeof(float)*3);
+        memcpy_s(&gyro, sizeof(float) * 3, buffer + sizeof(double)+ sizeof(float) * 3, sizeof(float) * 3);
+        
+        std::cout << "Received message from " << addr_char << " ts:" << ts << " " << acc[0] << "," << acc[1] << "," << acc[2] << "\t"
+            << gyro[0] << "," << gyro[1] << "," << gyro[2] << "\n";
+        // optionally
+        if (ackToClient)
             sendto(socketS, buffer, sizeof(buffer), 0, (sockaddr*)&from, fromlen);
     }
     return true;

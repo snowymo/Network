@@ -26,8 +26,9 @@ int main(int argc, unsigned char* argv[])
     UDPServer* udpServer = new UDPServer();
     while (1)
     {
-        udpServer->recv();
-        Sleep(500);
+        //udpServer->recvShoeInsoles();
+        udpServer->recvIMU();
+        Sleep(1);
     }
     
     udpServer->closeConnection();
