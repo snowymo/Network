@@ -14,6 +14,7 @@ public:
     UDPClient(char* serverName = NULL);
     ~UDPClient();
 
+    bool send(char* bytes, int len);
     bool sendMsg(std::string msg);
     void closeConnection();
     void setAckFromServer(bool b) { ackFromServer = b; }

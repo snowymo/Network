@@ -23,5 +23,8 @@ private:
     struct sockaddr_in from;
     int fromlen;
     bool ackToClient;
+    int nRows, nCols;
+    char* buffer;
+    int* forces;
 };
 

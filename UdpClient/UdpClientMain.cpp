@@ -12,6 +12,8 @@
 //   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
 //   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
 #include "UDPClient.h"
+#include <chrono>
+using namespace std::chrono;
 
 // Need to link with Ws2_32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -27,12 +29,37 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    int nCols = 5, nRows = 4;
+    int* forces = new int[nCols*nRows];
+    for (int i = 0; i < nCols; i++) {
+        for (int j = 0; j < nRows; j++) {
+            forces[i*nRows + j] = rand() % 100;
+        }
+    }
+
+    int index = 0;
+    int len = sizeof(long long) + sizeof(int) + sizeof(int) + sizeof(int)*nCols*nRows;
+    char* buffer = new char[len];
+    ZeroMemory(buffer, len);
+    index += sizeof(long long);
+    memcpy_s(buffer+index, sizeof(int), (void*)&nCols, sizeof(int));
+    index += sizeof(int);
+    memcpy_s(buffer + index, sizeof(int), (void*)&nRows, sizeof(int));
+    index += sizeof(int);
+    memcpy_s(buffer+index, sizeof(int)*nCols*nRows, (void*)forces, sizeof(int)*nCols*nRows);
+    
+
     UDPClient* udpClient = new UDPClient(argv[1]);
     bool TBC = true;
     while (TBC) {
         std::string msg;
         std::cin >> msg;
-        TBC = udpClient->sendMsg(msg);
+        //TBC = udpClient->sendMsg(msg);
+        // simulate frame.forces
+        long long ts = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+        std::cout << "sending ts " << ts << "\n";
+        memcpy_s(buffer, sizeof(long long), (void*)&ts, sizeof(long long));
+        TBC &= udpClient->send(buffer, len);
     }
     udpClient->closeConnection();
 

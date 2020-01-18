@@ -24,6 +24,22 @@ UDPClient::~UDPClient()
 {
 }
 
+bool UDPClient::send(char * bytes, int len)
+{
+    if (sendto(socketC, (const char*)bytes, len, 0, (sockaddr*)&serverInfo, len) != SOCKET_ERROR)
+    {        
+        if (ackFromServer) {
+            char buffer[1024];
+            ZeroMemory(buffer, sizeof(buffer));
+            if (recvfrom(socketC, buffer, sizeof(buffer), 0, (sockaddr*)&serverInfo, &len) != SOCKET_ERROR)
+            {
+                printf("Receive response from server: %s\n", buffer);
+            }
+        }
+    }
+    return true;
+}
+
 bool UDPClient::sendMsg(std::string msg)
 {    
     if (strcmp(msg.c_str(), "exit") == 0)
