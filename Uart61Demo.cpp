@@ -29,7 +29,8 @@ int sock, n;
    unsigned int length;
    struct sockaddr_in server, from;
    struct hostent *hp;
-char udp_buffer[sizeof(double)*7];
+const int udpBufferLength = 8+4+4*6;
+char udp_buffer[udpBufferLength];
 
 void error(const char *msg)
 {
@@ -258,13 +259,13 @@ void ParseData(char chr)
 int main(int argc, char* argv[])
 {
     // server and port
-    if (argc < 3) {
+    if (argc < 4) {
        fprintf(stderr,"usage %s hostname port\n", argv[0]);
        exit(0);
     }
     // connect the server
-    if (argc != 3) { 
-	printf("Usage: server port\n");
+    if (argc != 4) { 
+	printf("Usage: server port id\n");
 	exit(1);
     }
     sock= socket(AF_INET, SOCK_DGRAM, 0);
@@ -281,6 +282,7 @@ int main(int argc, char* argv[])
     length=sizeof(struct sockaddr_in);
 	
 	// imu part
+	int imuid = atoi(argv[3]);
     char r_buf[1024];
     bzero(r_buf,1024);
 
@@ -326,22 +328,23 @@ int main(int argc, char* argv[])
 		printf("\nmy ww:%7.3f %7.3f %7.3f ",ww0,ww1,ww2);
 		printf("my aa:%7.3f %7.3f %7.3f \n",aa0,aa1,aa2);
 		
-		bzero(udp_buffer,sizeof(double)*4);
+		bzero(udp_buffer,udpBufferLength);
 		memcpy(udp_buffer, &curTime, sizeof(double));
+		memcpy(udp_buffer+8, &imuid, sizeof(int));
 		
 		//memcpy(udp_buffer, &curTime, sizeof(double));
 		
-		memcpy(udp_buffer+8, &aa0, sizeof(float));
-		memcpy(udp_buffer+8+4, &aa1, sizeof(float));
-		memcpy(udp_buffer+8+4*2, &aa2, sizeof(float));
+		memcpy(udp_buffer+8+sizeof(int), &aa0, sizeof(float));
+		memcpy(udp_buffer+8+sizeof(int)+4, &aa1, sizeof(float));
+		memcpy(udp_buffer+8+sizeof(int)+4*2, &aa2, sizeof(float));
 		
-		memcpy(udp_buffer+8+4*3, &ww0, sizeof(float));
-		memcpy(udp_buffer+8+4*4, &ww1, sizeof(float));
-		memcpy(udp_buffer+8+4*5, &ww2, sizeof(float));
+		memcpy(udp_buffer+8+sizeof(int)+4*3, &ww0, sizeof(float));
+		memcpy(udp_buffer+8+sizeof(int)+4*4, &ww1, sizeof(float));
+		memcpy(udp_buffer+8+sizeof(int)+4*5, &ww2, sizeof(float));
 	    
 		//memcpy(udp_buffer+sizeof(double)+sizeof(double)*3, gyro, sizeof(double)*3);
 		n=sendto(sock,udp_buffer,
-		    sizeof(double)*4,0,(const struct sockaddr *)&server,length);
+		    udpBufferLength,0,(const struct sockaddr *)&server,length);
 		if (n < 0) error("Sendto");
 		newData = false;
 	    }
