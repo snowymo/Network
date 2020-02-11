@@ -1,8 +1,8 @@
 const util = require('util');
 
-var ListenPort = 11111;
+var ListenPort = 27015;//11111;
 var SendPort = 44444;
-var ServerIp = '172.24.71.214';
+var ServerIp = '127.0.0.1';//'172.24.71.214';
 
 var dgram = require('dgram');
 var server4send = dgram.createSocket('udp4');
@@ -54,15 +54,14 @@ server.on('message', function(message, remote) {
 	var cur_time = Date.now();
 	
 	var obj = JSON.parse(message.toString());
-	console.log(remote.address + ':' + remote.port +' - ' + message + "\tremote data:"
-	+ util.inspect(obj, {showHidden: false, depth: null}));
+	console.log(remote.address + ':' + remote.port +' - ' + message + "\tremote data:" + util.inspect(obj, {showHidden: false, depth: null}));
 	
-	clients[obj.name].arrival_time = obj.arrival_time;
-	clients[obj.name].roundtrip = cur_time - clients[obj.name].depart_time; // in ms
-	clients[obj.name].offset = obj.arrival_time - clients[obj.name].depart_time - clients[obj.name].roundtrip/2;
-	clients[obj.name].end_time = cur_time;
+	//clients[obj.name].arrival_time = obj.arrival_time;
+	//clients[obj.name].roundtrip = cur_time - clients[obj.name].depart_time; // in ms
+	//clients[obj.name].offset = obj.arrival_time - clients[obj.name].depart_time - clients[obj.name].roundtrip/2;
+	//clients[obj.name].end_time = cur_time;
 	
-	console.log(util.inspect(clients[obj.name], {showHidden: false, depth: null}));
+	//console.log(util.inspect(clients[obj.name], {showHidden: false, depth: null}));
 });
 
 server.bind({
