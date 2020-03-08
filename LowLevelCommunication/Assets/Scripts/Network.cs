@@ -45,9 +45,11 @@ public class Network : MonoBehaviour
         switch (commType) {
         case COMMUNICATION_TYPE.TCP:
             tcpClient = new TcpClient();
+            StartTCPThread();
             break;
         case COMMUNICATION_TYPE.UDP:
             udpClient = new UdpClient();
+            StartUDPThread();
             break;
         default:
             break;
